@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -74,7 +77,7 @@ func main() {
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
 	c := cron.New()
-	_, err := c.AddFunc("@hourly", func() {
+	_, err := c.AddFunc("@every 15m", func() {
 		var wg sync.WaitGroup
 		wg.Add(len(tickers))
 
@@ -91,9 +94,23 @@ func main() {
 		wg.Wait()
 	})
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
 
 	c.Start()
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Println("Type \"q\" to quit..")
+		comm, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if strings.Compare(comm, "q") == 1 {
+			c.Stop()
+			break
+		}
+	}
 
 }
