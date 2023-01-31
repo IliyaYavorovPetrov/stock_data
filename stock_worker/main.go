@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 )
 
 func getStockQuote(ticker string, apiKey string) string {
@@ -73,18 +74,30 @@ func main() {
 	tickers := [8]string{"AAPL", "JNJ", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
-	var wg sync.WaitGroup
-	wg.Add(len(tickers))
+	timeTicker := time.NewTicker(90 * time.Second)
+	timeQuit := make(chan struct{})
 
-	for i, x := range tickers {
-		ticker := x
-		go func(i int) {
-			defer wg.Done()
-			quote := getStockQuote(ticker, apiKey)
-			price := getStockPrice(ticker, apiKey)
-			fmt.Printf("%s: %f\n", quote, price)
-		}(i)
-	}
+	go func() {
+		for {
+			select {
+			case <-timeTicker.C:
+				var wg sync.WaitGroup
+				wg.Add(len(tickers))
 
-	wg.Wait()
+				for i, x := range tickers {
+					ticker := x
+					go func(i int) {
+						defer wg.Done()
+						quote := getStockQuote(ticker, apiKey)
+						price := getStockPrice(ticker, apiKey)
+						fmt.Printf("%s: %f\n", quote, price)
+					}(i)
+				}
+
+				wg.Wait()
+			case <-timeQuit:
+				timeTicker.Stop()
+			}
+		}
+	}()
 }
