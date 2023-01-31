@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 func getStockQuote(ticker string, apiKey string) string {
@@ -77,7 +78,7 @@ func main() {
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
 	c := cron.New()
-	_, err := c.AddFunc("@every 20m", func() {
+	_, err := c.AddFunc("0,30 * * * *", func() {
 		var wg sync.WaitGroup
 		wg.Add(len(tickers))
 
@@ -85,9 +86,10 @@ func main() {
 			ticker := x
 			go func(i int) {
 				defer wg.Done()
+				currTime := time.Now()
 				quote := getStockQuote(ticker, apiKey)
 				price := getStockPrice(ticker, apiKey)
-				fmt.Printf("%s: %f\n", quote, price)
+				fmt.Printf("[%s] %s: %f\n", currTime.Format(time.RFC1123), quote, price)
 			}(i)
 		}
 
