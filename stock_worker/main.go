@@ -1,29 +1,75 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"net/http"
+	"strconv"
 )
 
+func getStockQuote(ticker string, apiKey string) string {
+	url := "https://api.twelvedata.com/quote?symbol=" + ticker + "&apikey=" + apiKey
+
+	fmt.Println(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	type QuoteStruct struct {
+		QuoteString string `json:"name"`
+	}
+
+	var quote QuoteStruct
+	if err := json.Unmarshal(data, &quote); err != nil {
+		fmt.Println(err)
+	}
+
+	return quote.QuoteString
+}
+
+func getStockPrice(ticker string, apiKey string) float64 {
+	url := "https://api.twelvedata.com/price?symbol=" + ticker + "&apikey=" + apiKey
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	type PriceStruct struct {
+		PriceString string `json:"price"`
+	}
+
+	var priceString PriceStruct
+	if err := json.Unmarshal(data, &priceString); err != nil {
+		fmt.Println(err)
+	}
+
+	priceFloat64, err := strconv.ParseFloat(priceString.PriceString, 64)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return priceFloat64
+}
+
 func main() {
-	ticker := "TSLA"
-	api := "e808bc63e1de4120a2690e7d4a447156"
+	ticker := "UBER"
+	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
-	fmt.Println(ticker)
-	fmt.Println(api)
+	quote := getStockQuote(ticker, apiKey)
+	price := getStockPrice(ticker, apiKey)
 
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	sb := string(body)
-	log.Printf(sb)
+	fmt.Printf("%s: %f\n", quote, price)
 }
