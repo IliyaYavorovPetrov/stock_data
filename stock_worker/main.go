@@ -36,6 +36,10 @@ func getStockQuote(ticker string, apiKey string) string {
 		fmt.Println(err)
 	}
 
+	if quote.QuoteString == "" {
+		return noAnswerQuote
+	}
+
 	return quote.QuoteString
 }
 
@@ -62,7 +66,7 @@ func getStockPrice(ticker string, apiKey string) float64 {
 	}
 
 	if priceString.PriceString == "" {
-		return 0
+		return noAnswerPrice
 	}
 
 	priceFloat64, err := strconv.ParseFloat(priceString.PriceString, 64)
@@ -72,6 +76,10 @@ func getStockPrice(ticker string, apiKey string) float64 {
 
 	return priceFloat64
 }
+
+const apiName = "https://twelvedata.com"
+const noAnswerQuote = "NO_ANSWER_QUOTE"
+const noAnswerPrice = -1
 
 func main() {
 	tickers := [7]string{"AAPL", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
@@ -89,7 +97,12 @@ func main() {
 				currTime := time.Now()
 				quote := getStockQuote(ticker, apiKey)
 				price := getStockPrice(ticker, apiKey)
-				fmt.Printf("[%s] %s: %f\n", currTime.Format(time.RFC1123), quote, price)
+
+				if quote != noAnswerQuote && price != noAnswerPrice {
+					fmt.Printf("[%s] %s: %f\n", currTime.Format(time.RFC1123), quote, price)
+				} else {
+					fmt.Printf("No answer received from %s for %s\n", apiName, ticker)
+				}
 			}(i)
 		}
 
