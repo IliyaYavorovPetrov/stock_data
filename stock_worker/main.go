@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"io"
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
 )
 
 func getStockQuote(ticker string, apiKey string) string {
@@ -58,7 +58,6 @@ func getStockPrice(ticker string, apiKey string) float64 {
 	}
 
 	if priceString.PriceString == "" {
-		fmt.Println("Rate limit is reached, please wait")
 		return 0
 	}
 
@@ -74,30 +73,27 @@ func main() {
 	tickers := [8]string{"AAPL", "JNJ", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
-	timeTicker := time.NewTicker(90 * time.Second)
-	timeQuit := make(chan struct{})
+	c := cron.New()
+	_, err := c.AddFunc("@hourly", func() {
+		var wg sync.WaitGroup
+		wg.Add(len(tickers))
 
-	go func() {
-		for {
-			select {
-			case <-timeTicker.C:
-				var wg sync.WaitGroup
-				wg.Add(len(tickers))
-
-				for i, x := range tickers {
-					ticker := x
-					go func(i int) {
-						defer wg.Done()
-						quote := getStockQuote(ticker, apiKey)
-						price := getStockPrice(ticker, apiKey)
-						fmt.Printf("%s: %f\n", quote, price)
-					}(i)
-				}
-
-				wg.Wait()
-			case <-timeQuit:
-				timeTicker.Stop()
-			}
+		for i, x := range tickers {
+			ticker := x
+			go func(i int) {
+				defer wg.Done()
+				quote := getStockQuote(ticker, apiKey)
+				price := getStockPrice(ticker, apiKey)
+				fmt.Printf("%s: %f\n", quote, price)
+			}(i)
 		}
-	}()
+
+		wg.Wait()
+	})
+	if err != nil {
+		return
+	}
+
+	c.Start()
+
 }
