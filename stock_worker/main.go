@@ -73,11 +73,11 @@ func getStockPrice(ticker string, apiKey string) float64 {
 }
 
 func main() {
-	tickers := [8]string{"AAPL", "JNJ", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
+	tickers := [7]string{"AAPL", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
 	c := cron.New()
-	_, err := c.AddFunc("@every 15m", func() {
+	_, err := c.AddFunc("@every 20m", func() {
 		var wg sync.WaitGroup
 		wg.Add(len(tickers))
 
