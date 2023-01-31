@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  stock-mariadb-db:
+    image: mariadb:latest
+    container_name: stock-mariadb-db
+    ports:
+      - 9041:9041
+    restart: unless-stopped
+  stock-cassandra-db:
+    image: cassandra:latest
+    container_name: stock-cassandra-db
+    ports:
+      - 9042:9042
+    restart: unless-stopped
+    volumes:
+      - ./cfgs/cassandra.yaml:/etc/cassandra/cassandra.yaml
