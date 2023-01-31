@@ -6,12 +6,12 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 func getStockQuote(ticker string, apiKey string) string {
 	url := "https://api.twelvedata.com/quote?symbol=" + ticker + "&apikey=" + apiKey
 
-	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
@@ -56,6 +56,11 @@ func getStockPrice(ticker string, apiKey string) float64 {
 		fmt.Println(err)
 	}
 
+	if priceString.PriceString == "" {
+		fmt.Println("Rate limit is reached, please wait")
+		return 0
+	}
+
 	priceFloat64, err := strconv.ParseFloat(priceString.PriceString, 64)
 	if err != nil {
 		fmt.Println(err)
@@ -65,11 +70,21 @@ func getStockPrice(ticker string, apiKey string) float64 {
 }
 
 func main() {
-	ticker := "UBER"
+	tickers := [8]string{"AAPL", "JNJ", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
-	quote := getStockQuote(ticker, apiKey)
-	price := getStockPrice(ticker, apiKey)
+	var wg sync.WaitGroup
+	wg.Add(len(tickers))
 
-	fmt.Printf("%s: %f\n", quote, price)
+	for i, x := range tickers {
+		ticker := x
+		go func(i int) {
+			defer wg.Done()
+			quote := getStockQuote(ticker, apiKey)
+			price := getStockPrice(ticker, apiKey)
+			fmt.Printf("%s: %f\n", quote, price)
+		}(i)
+	}
+
+	wg.Wait()
 }
