@@ -82,7 +82,7 @@ const noAnswerQuote = "NO_ANSWER_QUOTE"
 const noAnswerPrice = -1
 
 func main() {
-	tickers := [7]string{"AAPL", "AMZN", "TSLA", "META", "PFE", "KO", "WMT"}
+	tickers := [4]string{"AAPL", "AMZN", "META", "TSLA"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 
 	c := cron.New()
@@ -99,7 +99,7 @@ func main() {
 				price := getStockPrice(ticker, apiKey)
 
 				if quote != noAnswerQuote && price != noAnswerPrice {
-					fmt.Printf("[%s] %s: %f\n", currTime.Format(time.RFC1123), quote, price)
+					fmt.Printf("[%s] %s: %.2f\n", currTime.Format(time.RFC1123), quote, price)
 				} else {
 					fmt.Printf("No answer received from %s for %s\n", apiName, ticker)
 				}
@@ -107,6 +107,7 @@ func main() {
 		}
 
 		wg.Wait()
+		fmt.Println("Type \"q\" to quit...")
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -116,7 +117,7 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println("Type \"q\" to quit..")
+		fmt.Println("Type \"q\" to quit...")
 		comm, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(err)
