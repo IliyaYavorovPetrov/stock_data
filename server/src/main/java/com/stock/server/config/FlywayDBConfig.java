@@ -23,18 +23,4 @@ public class FlywayDBConfig {
                 .defaultSchema(defaultSchema)
                 .load();
     }
-
-    @Bean
-    @Qualifier("cassandraFlyway")
-    public Flyway cassandraFlyway(
-            @Value("${spring.flyway.cassandra.url}") String url,
-            @Value("${spring.flyway.cassandra.user}") String user,
-            @Value("${spring.flyway.cassandra.password}") String password,
-            @Value("${spring.flyway.cassandra.locations}") String location
-    ) {
-        return Flyway.configure()
-                .dataSource(url, user, password)
-                .locations(location)
-                .load();
-    }
 }
