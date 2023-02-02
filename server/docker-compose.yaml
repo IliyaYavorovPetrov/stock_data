@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mariadb:
-    image: mariadb:latest
+    image: mariadb:10.5
     container_name: stock-mariadb-db
     ports:
       - 3306:3306
@@ -10,11 +10,3 @@ services:
       - MYSQL_ROOT_PASSWORD=123
       - MYSQL_DATABASE=stocks
     restart: unless-stopped
-  cassandra:
-    image: cassandra:latest
-    container_name: stock-cassandra-db
-    ports:
-      - 9042:9042
-    restart: unless-stopped
-    volumes:
-      - ./cfgs/cassandra.yaml:/etc/cassandra/cassandra.yaml
