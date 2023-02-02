@@ -1,4 +1,4 @@
-package com.stock.server.config;
+package com.stock.server.config.db.migrations.mariadb;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;

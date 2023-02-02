@@ -1,4 +1,4 @@
-package com.stock.server.config;
+package com.stock.server.config.db;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
