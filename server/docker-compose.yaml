@@ -10,3 +10,11 @@ services:
       - MYSQL_ROOT_PASSWORD=123
       - MYSQL_DATABASE=stocks
     restart: unless-stopped
+  cassandra:
+    image: cassandra:latest
+    container_name: stock-cassandra-db
+    ports:
+      - 9042:9042
+    restart: unless-stopped
+    volumes:
+      - ./cfgs/cassandra.yaml:/etc/cassandra/cassandra.yaml

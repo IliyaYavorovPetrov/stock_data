@@ -1,0 +1,13 @@
+package com.stock.server.config;
+
+import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class FlywayConfig {
+    public FlywayConfig(@Qualifier("mariadbFlyway") Flyway mariadbFlyway, @Qualifier("cassandraFlyway") Flyway cassandraFlyway) {
+        mariadbFlyway.migrate();
+        cassandraFlyway.migrate();
+    }
+}
