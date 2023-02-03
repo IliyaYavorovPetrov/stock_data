@@ -8,8 +8,7 @@ import org.springframework.data.cassandra.config.DefaultCqlBeanNames;
 
 @Configuration
 public class CassandraConfig {
-    @Bean(DefaultCqlBeanNames.SESSION)
-    @Primary
+    @Bean
     public CqlSession toCqlSession() {
         return CqlSession.builder().build();
     }
