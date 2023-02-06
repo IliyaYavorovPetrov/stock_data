@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/robfig/cron/v3"
 	"io"
 	"net/http"
@@ -84,9 +85,32 @@ const noAnswerPrice = -1
 func main() {
 	tickers := [4]string{"AAPL", "AMZN", "META", "TSLA"}
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
+	topic := "stock"
+
+	prod, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost:9092"})
+	if err != nil {
+		panic(err)
+	}
+
+	defer prod.Close()
+
+	go func() {
+		for e := range prod.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+				} else {
+					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+				}
+			}
+		}
+	}()
+
+	prod.Flush(15 * 1000)
 
 	c := cron.New()
-	_, err := c.AddFunc("0,30 * * * *", func() {
+	_, err = c.AddFunc("0,51 * * * *", func() {
 		var wg sync.WaitGroup
 		wg.Add(len(tickers))
 
@@ -100,6 +124,16 @@ func main() {
 
 				if quote != noAnswerQuote && price != noAnswerPrice {
 					fmt.Printf("[%s] %s: %.2f\n", currTime.Format(time.RFC1123), quote, price)
+					msg := "Hello from Go"
+
+					err := prod.Produce(&kafka.Message{
+						TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+						Value:          []byte(msg),
+					}, nil)
+					if err != nil {
+						fmt.Println(err)
+					}
+
 				} else {
 					fmt.Printf("No answer received from %s for %s\n", apiName, ticker)
 				}
