@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/stock_worker.iml" filepath="$PROJECT_DIR$/.idea/stock_worker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/stock_worker_golang.iml" filepath="$PROJECT_DIR$/.idea/stock_worker_golang.iml" />
     </modules>
   </component>
 </project>

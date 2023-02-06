@@ -118,16 +118,16 @@ func main() {
 
 	// Listen for events in the topics
 	//go func() {
-	//	for {
-	//		msg, err := cons.ReadMessage(-1)
-	//		if err == nil {
-	//			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
-	//		} else {
-	//			// The client will automatically try to recover from all errors.
-	//			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
-	//			break
-	//		}
-	//	}
+	//  for {
+	//    msg, err := cons.ReadMessage(-1)
+	//    if err == nil {
+	//      fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+	//    } else {
+	//      // The client will automatically try to recover from all errors.
+	//      fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+	//      break
+	//    }
+	//  }
 	//}()
 
 	// Create the cron job

@@ -1,4 +1,4 @@
-module stock_worker
+module github.com/IliyaYavorovPetrov/stock_data
 
 go 1.19
 
