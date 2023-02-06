@@ -1,4 +1,4 @@
-module github.com/IliyaYavorovPetrov/stock_data
+module stock_worker_golang
 
 go 1.19
 
