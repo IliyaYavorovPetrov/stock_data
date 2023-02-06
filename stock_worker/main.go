@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -87,37 +86,56 @@ func main() {
 	apiKey := "e808bc63e1de4120a2690e7d4a447156"
 	topic := "stock"
 
+	// Set up producer Kafka
 	prod, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost:9092"})
 	if err != nil {
 		panic(err)
 	}
-
 	defer prod.Close()
-
-	go func() {
-		for e := range prod.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
-				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
-				}
-			}
-		}
-	}()
-
 	prod.Flush(15 * 1000)
 
-	c := cron.New()
-	_, err = c.AddFunc("0,51 * * * *", func() {
-		var wg sync.WaitGroup
-		wg.Add(len(tickers))
+	// Set up consumer Kafka
+	cons, err := kafka.NewConsumer(&kafka.ConfigMap{
+		"bootstrap.servers": "localhost:9092",
+		"group.id":          "default",
+		"auto.offset.reset": "earliest",
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer func(cons *kafka.Consumer) {
+		err := cons.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(cons)
 
-		for i, x := range tickers {
-			ticker := x
-			go func(i int) {
-				defer wg.Done()
+	// Subscribe to topics in Kafka
+	errSubTopic := cons.SubscribeTopics([]string{topic}, nil)
+	if errSubTopic != nil {
+		fmt.Println(err)
+	}
+
+	// Listen for events in the topics
+	//go func() {
+	//	for {
+	//		msg, err := cons.ReadMessage(-1)
+	//		if err == nil {
+	//			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+	//		} else {
+	//			// The client will automatically try to recover from all errors.
+	//			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+	//			break
+	//		}
+	//	}
+	//}()
+
+	// Create the cron job
+	c := cron.New()
+	_, err = c.AddFunc("0,30 * * * *", func() {
+		for _, t := range tickers {
+			ticker := t
+			go func() {
 				currTime := time.Now()
 				quote := getStockQuote(ticker, apiKey)
 				price := getStockPrice(ticker, apiKey)
@@ -137,19 +155,18 @@ func main() {
 				} else {
 					fmt.Printf("No answer received from %s for %s\n", apiName, ticker)
 				}
-			}(i)
+			}()
 		}
 
-		wg.Wait()
 		fmt.Println("Type \"q\" to quit...")
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
 
+	// Start the stock worker
 	c.Start()
 	reader := bufio.NewReader(os.Stdin)
-
 	for {
 		fmt.Println("Type \"q\" to quit...")
 		comm, err := reader.ReadString('\n')
