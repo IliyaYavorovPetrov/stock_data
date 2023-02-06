@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/robfig/cron/v3"
 	"log"
@@ -27,8 +28,13 @@ func main() {
 	prod.Flush(15 * 1000)
 
 	// Create the cron job
+	type StockDataStruct struct {
+		StockDataQuote string  `json:"quote"`
+		StockDataPrice float64 `json:"price"`
+	}
+
 	c := cron.New()
-	_, err = c.AddFunc("0,43 * * * *", func() {
+	_, err = c.AddFunc("0,30 * * * *", func() {
 		for _, t := range tickers {
 			ticker := t
 			go func() {
@@ -37,11 +43,17 @@ func main() {
 
 				if quote != noAnswerQuote && price != noAnswerPrice {
 					l.Printf("%s: %.2f\n", quote, price)
-					msg := "Hello from Go"
+
+					data := StockDataStruct{
+						StockDataQuote: quote,
+						StockDataPrice: price,
+					}
+
+					dataJson, _ := json.Marshal(data)
 
 					err := prod.Produce(&kafka.Message{
 						TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-						Value:          []byte(msg),
+						Value:          []byte(string(dataJson)),
 					}, nil)
 					if err != nil {
 						l.Println(err)
