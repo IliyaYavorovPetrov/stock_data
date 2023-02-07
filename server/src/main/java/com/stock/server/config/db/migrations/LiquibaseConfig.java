@@ -1,4 +1,4 @@
-package com.stock.server.config.db;
+package com.stock.server.config.db.migrations;
 
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.context.annotation.Bean;
