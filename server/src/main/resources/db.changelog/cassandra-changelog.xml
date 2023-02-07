@@ -1,0 +1,23 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+    <changeSet id="create-table" author="liquibase">
+        <createTable tableName="users">
+            <column name="id" type="uuid" primaryKey="true"/>
+            <column name="username" type="text"/>
+            <column name="email" type="text"/>
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="create-materialized-view" author="liquibase">
+        <createMaterializedView viewName="users_by_email">
+            <selectQuery>SELECT * FROM users WHERE email IS NOT NULL</selectQuery>
+            <column name="id" type="uuid"/>
+            <column name="username" type="text"/>
+            <column name="email" type="text"/>
+            <column name="created_at" type="timestamp"/>
+            <clusteringKey name="email" order="ASC"/>
+        </createMaterializedView>
+    </changeSet>
+</databaseChangeLog>

@@ -1,6 +1,5 @@
 package com.stock.server.config.db;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +11,8 @@ import javax.sql.DataSource;
 
 @Configuration
 public class MariadbConfig {
-    @Bean
-    @ConfigurationProperties("spring.datasource")
-    public DataSource dataSource() {
+    @Bean(name="mariadb")
+    public DataSource dataSourceMariadb() {
         return DataSourceBuilder
                 .create()
                 .type(SingleConnectionDataSource.class)
