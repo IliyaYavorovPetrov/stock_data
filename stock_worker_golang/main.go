@@ -17,15 +17,22 @@ func main() {
 
 	l := log.New(os.Stdout, "stock_worker_golang ", log.LstdFlags)
 
-	// Set up producer Kafka
-	prod, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost:9092"})
-	if err != nil {
-		panic(err)
-	}
+	// Set up Kafka
+	prod, cons := setUpKafka()
 
 	defer prod.Close()
+	defer func(cons *kafka.Consumer) {
+		err := cons.Close()
+		if err != nil {
+			l.Println(err)
+		}
+	}(cons)
 
 	prod.Flush(15 * 1000)
+	err := cons.SubscribeTopics([]string{topic}, nil)
+	if err != nil {
+		l.Println(err)
+	}
 
 	// Create the cron job
 	type StockDataStruct struct {
@@ -37,6 +44,7 @@ func main() {
 	_, err = c.AddFunc("0,30 * * * *", func() {
 		for _, t := range tickers {
 			ticker := t
+
 			go func() {
 				quote := getStockQuote(ticker, apiKey)
 				price := getStockPrice(ticker, apiKey)
@@ -50,10 +58,9 @@ func main() {
 					}
 
 					dataJson, _ := json.Marshal(data)
-
 					err := prod.Produce(&kafka.Message{
 						TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-						Value:          []byte(string(dataJson)),
+						Value:          dataJson,
 					}, nil)
 					if err != nil {
 						l.Println(err)
