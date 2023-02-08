@@ -4,4 +4,4 @@ profiles:
     replication:
       class: SimpleStrategy
       replication_factor: 1
-migrations_path: ./migrations
+migrations_path: src/main/java/resources/db/migration/cassandra

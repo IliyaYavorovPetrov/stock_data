@@ -35,6 +35,14 @@ services:
     restart: unless-stopped
     volumes:
       - ./cfg/cassandra.yaml:/etc/cassandra/cassandra.yaml
+  cassandra-init:
+    image: cassandra:latest
+    depends_on:
+      - cassandra
+    restart: unless-stopped
+    entrypoint: [ "/cassandra_init.sh" ]
+    volumes:
+      - ./cassandra_init.sh:/cassandra_init.sh
   redis:
     image: redis:latest
     container_name: stock-redis-db
