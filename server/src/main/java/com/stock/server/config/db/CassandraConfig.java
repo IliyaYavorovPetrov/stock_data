@@ -10,13 +10,6 @@ import javax.sql.DataSource;
 
 @Configuration
 public class CassandraConfig {
-    @Bean(name="cassandra")
-    public DataSource dataSourceCassandra() {
-        return DataSourceBuilder
-                .create()
-                .type(SingleConnectionDataSource.class)
-                .build();
-    }
     @Bean
     public CqlSession toCqlSession() {
         return CqlSession.builder().build();

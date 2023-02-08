@@ -1,0 +1,7 @@
+keyspace: stocks
+profiles:
+  prod:
+    replication:
+      class: SimpleStrategy
+      replication_factor: 1
+migrations_path: ./migrations
